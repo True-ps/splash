@@ -1,5 +1,4 @@
 ﻿<#
-AMA -> andrei@naverisk.com
 
 This script can be ran in a few different ways:
 1. Without any parameters - this will install Splashtop if it is not installed.
