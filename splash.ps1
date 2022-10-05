@@ -134,7 +134,14 @@ function Install
 	# Download the file and execute it
 	
 	
-	Start-Bitstransfer $splashDown $splashTemp
+	$error.clear()
+	try{Start-Bitstransfer $splashDown $splashTemp}
+	catch{"Start-Bitstransfer failed, or something! Ups!"}
+        if ($error)
+	{
+	(New-Object System.Net.WebClient).DownloadFile([string]$splashDown , [string]$splashTemp)
+	}
+	#^sorcery
 	
 	Start-Process $splashTemp -ArgumentList prevercheck, /s, /i, confirm_d=0, hidewindow=1, dcode=$key -Wait
 	
