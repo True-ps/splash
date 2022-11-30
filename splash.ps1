@@ -13,11 +13,12 @@ I will do my best to maintain the Version of Splashtop that this script deploys,
 <#setting script parameters#>
 $splash = "Splashtop Streamer"
 $random = Get-Random
-$order = "install"
+$order = $args[0]
 $key = $args[1] 
 import-module Bitstransfer
 
-$splashDown = "https://my.splashtop.com/csrs/win"#<-----here is where you need to paste the new link!!!****
+#$splashDown = "https://my.splashtop.com/csrs/win"#<-----here is where you need to paste the new link!!!****
+$splashDown = "https://redirect.splashtop.com/srs/win?"
 
 $splashexecDir = "c:\splashtemp"
 
@@ -112,6 +113,7 @@ if ($_ProCtrl = Get-Process $proc -ErrorAction SilentlyContinue)
 			}
 			else { Write-Host "Process $proc not found!" }
 Write-EventLog @eventlogValues @errors
+
 }
     
 }
@@ -136,8 +138,9 @@ function Install
 	{
 
 		#cleanup
-		remove-item -recurse $splashTemp
+		remove-item -recurse $splashexecDir -Force
 	}
+
 Write-EventLog @eventlogvalues @info
 }
 
@@ -199,7 +202,6 @@ else
 	{
 		uninstall
 		write-output "You have successfully uninstalled $splash from $hostname($ip). Thank you for your trust in us!"
-        
 	}
 	elseif (($order -eq "reinstall" -and [string]::IsNullOrEmpty($key)) -or ($order -eq "reinstall" -and (-not[string]::IsNullOrEmpty($key))))
 	{
