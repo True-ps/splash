@@ -1,35 +1,23 @@
-﻿<#
-
+<#
 This script can be ran in a few different ways:
-1. Without any parameters - this will install Splashtop if it is not installed.
+1. Without any parameters - this will install Splashtop if it is not installed
 2. With the "install" parameter - this will attempt to upgrade Splashtop if already installed, or install it missing. A deployment code can be used.
 3. With the "uninstall" parameter - this will uninstall Splashtop
 4. With the "reinstall" parameter - This will uninstall then reinstall Splashtop. A deployment code can be used.
 NOTE: They deployment code must be the second parameter passed. I.e. install xxxxxxxxxxxxxxx
-Another NOTE: Unless supported by the developer of the script, any attempts at running the script with just the deployment code as parameter will fail.
+Another NOTE: Unless supported by the developer of the script(me), any attempts at running the script with just the deployment code as parameter will fail.
 
 I will do my best to maintain the Version of Splashtop that this script deploys, as well as update the syntax.
-
-Updating the Streamer Version is actually quite simple.****
-A. go to "https://www.splashtop.com/downloadstart?platform=Windows"
-B. right-click on where it says "If the download didn’t start, click here."
-c. Select "Copy link address"
-D. Paste the link either in the $splashDown parameter of the script or in a notepad, in case you want to update the script later. 
-E. Save the script
-
-
 #>
-
-#creating EventLog definitions
 
 <#setting script parameters#>
 $splash = "Splashtop Streamer"
 $random = Get-Random
-$order = $args[0]
+$order = "install"
 $key = $args[1] 
 import-module Bitstransfer
 
-$splashDown = "https://d17kmd0va0f0mp.cloudfront.net/win/Splashtop_Streamer_Win_INSTALLER_v3.4.2.0.exe"#<-----here is where you need to paste the new link!!!****
+$splashDown = "https://my.splashtop.com/csrs/win"#<-----here is where you need to paste the new link!!!****
 
 $splashexecDir = "c:\splashtemp"
 
@@ -51,9 +39,9 @@ if($splashRegVer = Get-ItemProperty "HKLM:\SOFTWARE\WOW6432Node\Splashtop Inc.\S
 $splashver = $splashRegver.version.Split("=")}
 else{Write-Host -ForegroundColor Red "$splash is not installed"}
 
-#the below queries the WMI repository and can take a while to complete.
+#the below commented syntax queries the WMI repository and can take a while to complete. 
+#you can replace get-wmiobject with get-ciminstance. CIM is 700ms faster on an SSD.
 <#if ($splashON = Get-WmiObject Win32_Product | Where-Object { $_.Name -like "Splashtop streamer" } | Select-Object Name, version)
-
 {
 [string]$splashName = $splashON.Name.Split("=")
 	
@@ -61,11 +49,10 @@ else{Write-Host -ForegroundColor Red "$splash is not installed"}
 
 }#>
 
+#creating eventlog definitions
 $logFileExists = [System.Diagnostics.EventLog]::SourceExists("Streamer");
-#if the log source exists, it uses it. if it doesn't, it creates it.
 if (-not $logFileExists)
-{New-EventLog -LogName Application -Source "Streamer"} 
-#writes events to the windows event log
+{New-EventLog -LogName Application -Source "Streamer"}
 
 $eventlogvalues= @{
 LogName = 'Application' 
@@ -133,15 +120,15 @@ function Install
 	
 	# Download the file and execute it
 	
-	
+	#$download = Start-Bitstransfer $splashDown $splashTemp
 	$error.clear()
 	try{Start-Bitstransfer $splashDown $splashTemp}
 	catch{"Start-Bitstransfer failed, or something! Ups!"}
-        if ($error)
+    if ($error)
 	{
 	(New-Object System.Net.WebClient).DownloadFile([string]$splashDown , [string]$splashTemp)
 	}
-	#^sorcery
+	
 	
 	Start-Process $splashTemp -ArgumentList prevercheck, /s, /i, confirm_d=0, hidewindow=1, dcode=$key -Wait
 	
@@ -243,4 +230,3 @@ else
 	}
 	
 }
-
